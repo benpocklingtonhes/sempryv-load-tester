@@ -2,10 +2,14 @@ import os
 import queue
 import requests
 import time
+import warnings
 
 from dotenv import load_dotenv
 from threading import Thread
 from typing import List
+
+from requests.exceptions import ConnectionError
+from urllib3.exceptions import ProtocolError
 
 load_dotenv()
 
@@ -41,8 +45,8 @@ class Worker(Thread):
                 self.results.append(result)
                 self.queue.task_done()
                 print(f'Worker #{self.id} finished job #{job_id}')
-            except ConnectionError:
-                print(f'WARNING : Job #{job_id} has failed!')
+            except (TimeoutError, ConnectionError, ProtocolError):
+                warnings.warn(f'WARNING : Job #{job_id} has failed!')
 
 
 class Result:
