@@ -82,17 +82,18 @@ def analysis(results: List[Result]):
             number_of_successes += 1
         total_duration += result.duration
 
-    number_of_failures = len(results) - number_of_successes
-    average_request_time = round(total_duration / len(results), 2)
+    average_request_time = round(total_duration / NUMBER_OF_REQUESTS, 2)
     total_duration = round(total_duration, 2)
+    success_rate = round(NUMBER_OF_REQUESTS / number_of_successes, 2)
+
     print_title('results', caps=True)
     print(
         f'{NUMBER_OF_WORKERS} Workers, performing {NUMBER_OF_REQUESTS} requests, finished in {total_duration} seconds!'
     )
     print('-----------------------------')
-    print('# of requests : ', len(results))
-    print('# of successes : ', number_of_successes)
-    print('# of failures : ', number_of_failures)
+    print('# of requests : ', NUMBER_OF_REQUESTS)
+    print('# of concurrent users : ', NUMBER_OF_WORKERS)
+    print('Success rate : ', (success_rate * 100), '%')
     print('Average request time : ', average_request_time, ' seconds')
 
 
