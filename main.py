@@ -38,11 +38,13 @@ class Worker(Thread):
             self.queue.task_done()
             print(f'Worker #{self.id} finished job #{job_id}')
 
+
 class Result:
     def __init__(self, job_id, status_code, duration):
         self.id = job_id
         self.status_code = status_code
         self.duration = duration
+
 
 def test():
     print_title('starting load test', caps=True)
@@ -82,9 +84,11 @@ def analysis(results: List[Result]):
 
     number_of_failures = len(results) - number_of_successes
     average_request_time = round(total_duration / len(results), 2)
-
+    total_duration = round(total_duration, 2)
     print_title('results', caps=True)
-    print(f'{NUMBER_OF_WORKERS} Workers, performing {NUMBER_OF_REQUESTS} requests, finished in {total_duration} seconds!')
+    print(
+        f'{NUMBER_OF_WORKERS} Workers, performing {NUMBER_OF_REQUESTS} requests, finished in {total_duration} seconds!'
+    )
     print('-----------------------------')
     print('# of requests : ', len(results))
     print('# of successes : ', number_of_successes)
@@ -104,28 +108,18 @@ def make_a_request(url: str) -> requests.Response:
     headers = {'AUTHORIZATION': TOKEN}
     return requests.get(url=url, headers=headers)
 
-def setup():
-    print_title('set-up')
-
-
-
-def print_response(response: requests.Response):
-    response_dict = json.loads(response.text)
-    print('===============================')
-    print('RESPONSE : ')
-    print('-------------------------------')
-    for i in response_dict:
-        print(f'\t[{i}] : {response_dict[i]}')
-    print('===============================')
-
 
 def print_title(title: str, caps: bool = False):
-    if caps: title = title.upper()
+    if caps:
+        title = title.upper()
     print(f'\n=== {title} ===\n')
 
 
 def did_request_succeed(response: requests.Response) -> bool:
-    if response.status_code == 200: return True
-    else: return False
+    if response.status_code == 200:
+        return True
+    else:
+        return False
+
 
 test()
