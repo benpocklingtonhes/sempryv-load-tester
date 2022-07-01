@@ -33,9 +33,9 @@ class Worker(Thread):
     def run(self):
         while not self.queue.empty():
             job_id = self.queue.get()
-            start_time = time.time()
+            start_time = time.time() * 1000
             response = make_a_request(URL)
-            duration = round(time.time() - start_time, 2)
+            duration = round(time.time() * 1000 - start_time, 2)
             result = Result(job_id, response.status_code, duration)
             self.results.append(result)
             self.queue.task_done()
@@ -80,24 +80,36 @@ def test():
 def analysis(results: List[Result]):
     number_of_successes = 0
     total_duration = 0
+    max_request_time = 0
+    min_request_time = 999999
+
     for result in results:
         if result.status_code == 200:
             number_of_successes += 1
+        if result.duration > max_request_time:
+            max_request_time = result.duration
+        elif result.duration < min_request_time:
+            min_request_time = result.duration
         total_duration += result.duration
 
-    average_request_time = round(total_duration / NUMBER_OF_REQUESTS, 2)
-    total_duration = round(total_duration, 2)
+    total_duration = int(total_duration)
+    average_request_time = int(total_duration / NUMBER_OF_REQUESTS)
+    max_request_time = int(max_request_time)
+    min_request_time = int(min_request_time)
     success_rate = round(NUMBER_OF_REQUESTS / number_of_successes, 2)
 
     print_title('results', caps=True)
     print(
-        f'{NUMBER_OF_WORKERS} Workers, performing {NUMBER_OF_REQUESTS} requests, finished in {total_duration} seconds!'
+        f'{NUMBER_OF_WORKERS} Workers, performing {NUMBER_OF_REQUESTS} '
+        f'requests, finished in {total_duration} milliseconds!'
     )
     print('-----------------------------')
     print('# of requests : ', NUMBER_OF_REQUESTS)
     print('# of concurrent users : ', NUMBER_OF_WORKERS)
     print('Success rate : ', (success_rate * 100), '%')
-    print('Average request time : ', average_request_time, ' seconds')
+    print('Average request time : ', average_request_time, ' milliseconds')
+    print('Min request time : ', min_request_time, ' milliseconds')
+    print('Max request time : ', max_request_time, ' milliseconds')
 
 
 def get_simple_request_time():
