@@ -1,4 +1,8 @@
-import json, os, queue, requests, time
+import os
+import queue
+import requests
+import time
+
 from dotenv import load_dotenv
 from threading import Thread
 from typing import List
@@ -7,7 +11,6 @@ load_dotenv()
 
 # core config
 HOST = os.getenv('HOST')
-PORT = os.getenv('PORT')
 USER = os.getenv('USER')
 PRYV_URL = os.getenv('PRYV_URL')
 TOKEN = os.getenv('TOKEN')
@@ -15,7 +18,7 @@ STREAM = os.getenv('STREAM')
 LIMIT = os.getenv('LIMIT')
 
 # test config
-URL = f'{HOST}:{PORT}/{USER}.{PRYV_URL}/events?streams={STREAM}&limit={LIMIT}'
+URL = f'{HOST}/{USER}.{PRYV_URL}/events?streams={STREAM}&limit={LIMIT}'
 NUMBER_OF_WORKERS = int(os.getenv('NUMBER_OF_WORKERS'))
 NUMBER_OF_REQUESTS = int(os.getenv('NUMBER_OF_REQUESTS'))
 
