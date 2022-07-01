@@ -105,12 +105,6 @@ def analysis(results: List[Result]):
     codes = dict()
 
     for result in results:
-
-        if result.status_code in codes:
-            codes[result.status_code] += 1
-        else:
-            codes[result.status_code] = 1
-
         if result.status_code == 200:
             number_of_successes += 1
 
@@ -139,10 +133,6 @@ def analysis(results: List[Result]):
     print('Average request time : ', average_request_time, ' milliseconds')
     print('Min request time : ', min_request_time, ' milliseconds')
     print('Max request time : ', max_request_time, ' milliseconds')
-
-    print()
-    print()
-    print(codes)
 
 
 def get_simple_request_time():
