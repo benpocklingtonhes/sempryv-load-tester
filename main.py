@@ -34,12 +34,15 @@ class Worker(Thread):
         while not self.queue.empty():
             job_id = self.queue.get()
             start_time = time.time() * 1000
-            response = make_a_request(URL)
-            duration = round(time.time() * 1000 - start_time, 2)
-            result = Result(job_id, response.status_code, duration)
-            self.results.append(result)
-            self.queue.task_done()
-            print(f'Worker #{self.id} finished job #{job_id}')
+            try:
+                response = make_a_request(URL)
+                duration = round(time.time() * 1000 - start_time, 2)
+                result = Result(job_id, response.status_code, duration)
+                self.results.append(result)
+                self.queue.task_done()
+                print(f'Worker #{self.id} finished job #{job_id}')
+            except ConnectionError:
+                print(f'WARNING : Job #{job_id} has failed!')
 
 
 class Result:
@@ -96,7 +99,7 @@ def analysis(results: List[Result]):
     average_request_time = int(total_duration / NUMBER_OF_REQUESTS)
     max_request_time = int(max_request_time)
     min_request_time = int(min_request_time)
-    success_rate = round(NUMBER_OF_REQUESTS / number_of_successes, 2)
+    success_rate = round(number_of_successes / NUMBER_OF_REQUESTS, 2)
 
     print_title('results', caps=True)
     print(
