@@ -2,7 +2,6 @@ import os
 import queue
 import requests
 import time
-import warnings
 
 from dotenv import load_dotenv
 from threading import Thread
@@ -40,13 +39,20 @@ class Worker(Thread):
             start_time = time.time() * 1000
             try:
                 response = make_a_request(URL)
+
+                if response.status_code != 200:
+                    print(f'{Colors.WARNING}Job #{job_id} request was un-successful')
+
                 duration = round(time.time() * 1000 - start_time, 2)
                 result = Result(job_id, response.status_code, duration)
+
                 self.results.append(result)
                 self.queue.task_done()
-                print(f'Worker #{self.id} finished job #{job_id}')
+
+                print(f'{Colors.SUCCESS}Worker #{self.id} finished job #{job_id}')
+
             except (TimeoutError, ConnectionError, ProtocolError):
-                warnings.warn(f'WARNING : Job #{job_id} has failed!')
+                print(f'{Colors.ERROR}WARNING : Job #{job_id} has failed!')
 
 
 class Result:
@@ -54,6 +60,13 @@ class Result:
         self.id = job_id
         self.status_code = status_code
         self.duration = duration
+
+
+class Colors:
+    ERROR = '\033[91m'
+    WARNING = '\033[93m'
+    SUCCESS = '\033[92m'
+    INFO = '\033[0m'
 
 
 def test():
@@ -68,7 +81,7 @@ def test():
     # init of workers
     workers = []
     for i in range(NUMBER_OF_WORKERS):
-        print('Starting worker #' + str(i))
+        print(f'{Colors.INFO}Starting worker #' + str(i))
         worker = Worker(i, q)
         worker.start()
         workers.append(worker)
@@ -89,14 +102,23 @@ def analysis(results: List[Result]):
     total_duration = 0
     max_request_time = 0
     min_request_time = 999999
+    codes = dict()
 
     for result in results:
+
+        if result.status_code in codes:
+            codes[result.status_code] += 1
+        else:
+            codes[result.status_code] = 1
+
         if result.status_code == 200:
             number_of_successes += 1
+
         if result.duration > max_request_time:
             max_request_time = result.duration
         elif result.duration < min_request_time:
             min_request_time = result.duration
+
         total_duration += result.duration
 
     total_duration = int(total_duration)
@@ -110,7 +132,7 @@ def analysis(results: List[Result]):
         f'{NUMBER_OF_WORKERS} Workers, performing {NUMBER_OF_REQUESTS} '
         f'requests, finished in {total_duration} milliseconds!'
     )
-    print('-----------------------------')
+    print(f'{Colors.INFO}-----------------------------')
     print('# of requests : ', NUMBER_OF_REQUESTS)
     print('# of concurrent users : ', NUMBER_OF_WORKERS)
     print('Success rate : ', (success_rate * 100), '%')
@@ -118,13 +140,17 @@ def analysis(results: List[Result]):
     print('Min request time : ', min_request_time, ' milliseconds')
     print('Max request time : ', max_request_time, ' milliseconds')
 
+    print()
+    print()
+    print(codes)
+
 
 def get_simple_request_time():
     start = time.time()
     response = make_a_request(URL)
     if did_request_succeed(response):
         basic_request_time = round(time.time() - start, 2)
-        print('Single request time : ', basic_request_time, ' seconds\n')
+        print(f'{Colors.INFO}Single request time : ', basic_request_time, ' seconds\n')
 
 
 def make_a_request(url: str) -> requests.Response:
@@ -132,10 +158,10 @@ def make_a_request(url: str) -> requests.Response:
     return requests.get(url=url, headers=headers)
 
 
-def print_title(title: str, caps: bool = False):
+def print_title(title: str, color: str = Colors.INFO, caps: bool = False):
     if caps:
         title = title.upper()
-    print(f'\n=== {title} ===\n')
+    print(f'{color}\n=== {title} ===\n')
 
 
 def did_request_succeed(response: requests.Response) -> bool:
